@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Great Bird Hunt</title>
+    <style>
+        :root {
+            --forest: #173f35;
+            --green: #47785c;
+            --cream: #f6f5ed;
+            --gold: #e6bd65;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--cream);
+            color: var(--forest);
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            width: min(100%, 650px);
+            margin: auto;
+            padding: 24px 18px 45px;
+        }
+
+        header {
+            text-align: center;
+            padding: 22px 0;
+        }
+
+        .eyebrow {
+            letter-spacing: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--green);
+        }
+
+        h1 {
+            font-size: clamp(30px, 7vw, 45px);
+            margin: 12px 0;
+        }
+
+        .subtitle {
+            color: #63746a;
+            line-height: 1.6;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 5px 25px #173f3510;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d8ded5;
+            border-radius: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            background: var(--forest);
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: .5;
+        }
+
+        .primary {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .pill {
+            background: #e8efe8;
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .progress {
+            display: flex;
+            gap: 7px;
+            margin: 18px 0;
+        }
+
+        .progress span {
+            height: 5px;
+            flex: 1;
+            background: #dce4da;
+            border-radius: 10px;
+        }
+
+        .progress span.done {
+            background: var(--green);
+        }
+
+        .image-wrap {
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            background: #e5e8df;
+            cursor: crosshair;
+            line-height: 0;
+        }
+
+        .image-wrap img {
+            display: block;
+            width: 100%;
+            height: auto;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .message {
+            min-height: 26px;
+            text-align: center;
+            margin: 15px 0 5px;
+            font-size: 14px;
+            color: var(--green);
+            line-height: 1.5;
+        }
+
+        .target {
+            position: absolute;
+            box-sizing: border-box;
+            border: 3px solid #e6bd65;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: pulse .7s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            to {
+                scale: 1.15;
+            }
+        }
+
+        .small {
+            color: #849087;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .big-time {
+            font-size: 43px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <header>
+            <div class="eyebrow">FIND • THE • BIRDIE</div>
+            <h1>The Great Bird Hunt</h1>
+            <p class="subtitle">Hunt but with no guns!<br>Can you hunt them all?</p>
+        </header>
+
+        <section id="welcome" class="panel">
+            <h2>Let the hunt begin!</h2>
+            <p class="subtitle">Enter your Instagram ID to start.</p>
+            <input id="instagram" placeholder="@yourusername" maxlength="30" autocomplete="off">
+            <p class="small">May the fastest hunter win.</p>
+            <button class="primary" onclick="startGame()">START THE HUNT →</button>
+            <p id="welcomeError" class="message"></p>
+        </section>
+
+        <section id="game" class="hidden">
+            <div class="topline">
+                <span class="pill" id="round">IMAGE 1 OF 4</span>
+                <span class="timer" id="timer">00:00.00</span>
+            </div>
+            <div class="progress" id="progress"></div>
+            <h2>Can you spot the bird?</h2>
+            <p class="subtitle">Tap directly on the hidden bird in the picture.</p>
+            <div class="image-wrap" id="imageWrap" onclick="checkTap(event)">
+                <img id="puzzleImage" alt="Find the hidden bird">
+            </div>
+            <p class="message" id="feedback">Look closely. The bird is hiding somewhere!</p>
+            <p class="small center">The timer continues while you search.</p>
+        </section>
+
+        <section id="complete" class="panel hidden center">
+            <div class="eyebrow">CHALLENGE COMPLETE</div>
+            <h1>Well spotted!</h1>
+            <p class="subtitle">You've found all five hidden birds in</p>
+            <div class="big-time" id="finalTime">00:00.00</div>
+            <p id="submitStatus" class="message">Please while we submit your result...</p>
+            <p class="small">Thank you for taking part in The Great Bird Hunt!</p>
+        </section>
+    </main>
+
+    <script>
+        // --------------------------------------------------
+        // CONFIGURATION
+        // Add the correct bird position for each image.
+        // Coordinates are percentages from the top-left.
+        // x: 0-100, y: 0-100.
+        // radius: clickable tolerance in percentage points.
+        // --------------------------------------------------
+
+        const puzzles = [
+            { image: "bird-1.jpeg", x: 55, y: 45, radius: 10 },
+            { image: "bird-2.jpeg", x: 20, y: 52, radius: 10 },
+            { image: "bird-3.jpeg", x: 55, y: 30, radius: 10 },
+            { image: "bird-4.jpeg", x: 71, y: 25, radius: 10 },
+            { image: "bird-5.jpeg", x: 52, y: 58, radius: 10 }
+        ];
+
+        // Paste your deployed Google Apps Script URL here.
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyB-h8XxfdVnxUeodAYCz724Ef_CN4cqW6s4q1cVMz8rqwf8jaiIOTeWAD6cFSKvX4z/exec";
+
+        // --------------------------------------------------
+
+        let username = "";
+        let current = 0;
+        let startedAt = 0;
+        let timerInterval = null;
+        let completed = false;
+
+        const $ = id => document.getElementById(id);
+
+        function normaliseID(value) {
+            return value.trim().replace(/^@+/, "").toLowerCase();
+        }
+
+        function formatTime(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const centiseconds = Math.floor((ms % 1000) / 10);
+            return String(minutes).padStart(2, "0") + ":" +
+                String(seconds).padStart(2, "0") + "." +
+                String(centiseconds).padStart(2, "0");
+        }
+
+        function startGame() {
+            const id = normaliseID($("instagram").value);
+            $("welcomeError").textContent = "";
+
+            if (!/^[a-z0-9._]{1,30}$/.test(id)) {
+                $("welcomeError").textContent =
+                    "Please enter a valid Instagram username.";
+                return;
+            }
+
+            if (puzzles.some(p => p.x === null || p.y === null)) {
+                $("welcomeError").textContent =
+                    "The game is being configured. Please try again later.";
+                return;
+            }
+
+            username = id;
+            current = 0;
+            completed = false;
+
+            $("welcome").classList.add("hidden");
+            $("game").classList.remove("hidden");
+
+            $("progress").innerHTML = puzzles
+                .map(() => "<span></span>")
+                .join("");
+
+            loadPuzzle();
+            startedAt = performance.now();
+
+            timerInterval = setInterval(() => {
+                $("timer").textContent =
+                    formatTime(performance.now() - startedAt);
+            }, 30);
+        }
+
+        function loadPuzzle() {
+            const p = puzzles[current];
+            $("round").textContent = `IMAGE ${current + 1} OF ${puzzles.length}`;
+            $("puzzleImage").src = p.image;
+            $("puzzleImage").alt = `Bird spotting image ${current + 1}`;
+            $("feedback").textContent = "Look closely. Find the hidden bird!";
+
+            [...$("progress").children].forEach((el, i) => {
+                el.classList.toggle("done", i < current);
+            });
+        }
+
+        function checkTap(event) {
+            if (completed) return;
+
+            const img = $("puzzleImage");
+            const rect = img.getBoundingClientRect();
+
+            const x = (event.clientX - rect.left) / rect.width * 100;
+            const y = (event.clientY - rect.top) / rect.height * 100;
+
+            const p = puzzles[current];
+            const dx = (x - p.x) * rect.width / 100;
+            const dy = (y - p.y) * rect.width / 100;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const tolerance = p.radius * rect.width / 100;
+
+            if (distance <= tolerance) {
+                $("feedback").textContent = "Yes! You found it! 🐦";
+
+                const marker = document.createElement("div");
+                marker.className = "target";
+
+                const diameter = (p.radius * 2 / 100) * rect.width;
+
+                marker.style.width = diameter + "px";
+                marker.style.height = diameter + "px";
+                marker.style.left = p.x + "%";
+                marker.style.top = p.y + "%";
+
+                $("imageWrap").appendChild(marker);
+
+                setTimeout(() => {
+                    marker.remove();
+                    current++;
+
+                    if (current >= puzzles.length) {
+                        finishGame();
+                    } else {
+                        loadPuzzle();
+                    }
+                }, 650);
+            } else {
+                $("feedback").textContent = "Not quite! Keep looking...";
+            }
+        }
+
+        function finishGame() {
+            if (completed) return;
+            completed = true;
+            clearInterval(timerInterval);
+
+            const elapsed = Math.round(performance.now() - startedAt);
+            const result = {
+                instagram_id: username,
+                completion_time_ms: elapsed,
+                completion_time: formatTime(elapsed),
+                completed_at: new Date().toISOString(),
+                images_completed: puzzles.length
+            };
+
+            $("game").classList.add("hidden");
+            $("complete").classList.remove("hidden");
+            $("finalTime").textContent = formatTime(elapsed);
+
+            submitResult(result);
+        }
+
+        function submitResult(result) {
+            if (!GOOGLE_SCRIPT_URL) {
+                $("submitStatus").textContent =
+                    "Game completed. Submission endpoint still needs configuration.";
+                console.log("Submission result:", result);
+                return;
+            }
+
+            const body = new URLSearchParams(result);
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body
+            }).then(() => {
+                $("submitStatus").textContent =
+                    "Your result has been submitted. Thank you!";
+            }).catch(() => {
+                $("submitStatus").textContent =
+                    "Your result could not be submitted. Please contact the organisers.";
+            });
+        }
+    </script>
+</body>
+
+</html>
